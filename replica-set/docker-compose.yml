@@ -27,9 +27,9 @@ services:
       - |
         set -e
         umask 077
-        printf '%s\n' 'c29tZVJlcGxpY2FLZXlGb3JSUzAyMDI2' > /tmp/mongo-keyfile
-        chown mongodb:mongodb /tmp/mongo-keyfile
-        exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --keyFile /tmp/mongo-keyfile
+        printf '%s\n' 'c29tZVJlcGxpY2FLZXlGb3JSUzAyMDI2' > /data/db/mongo-keyfile
+        chown mongodb:mongodb /data/db/mongo-keyfile 2>/dev/null || true
+        exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --keyFile /data/db/mongo-keyfile
     restart: unless-stopped
 
   mongo2:
@@ -51,9 +51,9 @@ services:
       - |
         set -e
         umask 077
-        printf '%s\n' 'c29tZVJlcGxpY2FLZXlGb3JSUzAyMDI2' > /tmp/mongo-keyfile
-        chown mongodb:mongodb /tmp/mongo-keyfile
-        exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --keyFile /tmp/mongo-keyfile
+        printf '%s\n' 'c29tZVJlcGxpY2FLZXlGb3JSUzAyMDI2' > /data/db/mongo-keyfile
+        chown mongodb:mongodb /data/db/mongo-keyfile 2>/dev/null || true
+        exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --keyFile /data/db/mongo-keyfile
     restart: unless-stopped
 
   mongo3:
@@ -75,9 +75,9 @@ services:
       - |
         set -e
         umask 077
-        printf '%s\n' 'c29tZVJlcGxpY2FLZXlGb3JSUzAyMDI2' > /tmp/mongo-keyfile
-        chown mongodb:mongodb /tmp/mongo-keyfile
-        exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --keyFile /tmp/mongo-keyfile
+        printf '%s\n' 'c29tZVJlcGxpY2FLZXlGb3JSUzAyMDI2' > /data/db/mongo-keyfile
+        chown mongodb:mongodb /data/db/mongo-keyfile 2>/dev/null || true
+        exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --keyFile /data/db/mongo-keyfile
     restart: unless-stopped
 
   mongo-init:
