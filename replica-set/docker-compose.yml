@@ -93,19 +93,15 @@ services:
       - bash
       - -c
       - |
-        echo "⏳ Chờ MongoDB khởi động (30s)..."
         sleep 30
 
-        echo "🔧 Kiểm tra kết nối mongo1..."
         until mongosh --host mongo1:27017 \
           -u admin -p secret123 \
           --authenticationDatabase admin \
           --eval "db.adminCommand('ping')" --quiet; do
-          echo "   mongo1 chưa sẵn sàng, thử lại sau 3s..."
           sleep 3
         done
 
-        echo "🔧 Khởi tạo Replica Set..."
         mongosh --host mongo1:27017 \
           -u admin -p secret123 \
           --authenticationDatabase admin \
@@ -124,10 +120,8 @@ services:
             }
           '
 
-        echo "⏳ Chờ bầu Primary (~12s)..."
         sleep 12
 
-        echo "✅ Tạo app user..."
         mongosh --host mongo1:27017 \
           -u admin -p secret123 \
           --authenticationDatabase admin \
@@ -141,7 +135,6 @@ services:
               });
             }
           '
-        echo "🎉 Replica Set rs0 đã sẵn sàng!"
     restart: on-failure
 
   mongo-express:
