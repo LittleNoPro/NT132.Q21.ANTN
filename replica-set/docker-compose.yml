@@ -1,0 +1,161 @@
+networks:
+  mongo-cluster:
+    driver: bridge
+
+volumes:
+  mongo1_data:
+  mongo2_data:
+  mongo3_data:
+
+services:
+  mongo1:
+    image: mongo:7.0
+    container_name: mongo1
+    hostname: mongo1
+    networks:
+      - mongo-cluster
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo1_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret123
+    entrypoint:
+      - bash
+      - -c
+      - |
+        set -e
+        umask 077
+        printf '%s\n' 'c29tZVJlcGxpY2FLZXlGb3JSUzAyMDI2' > /tmp/mongo-keyfile
+        chown mongodb:mongodb /tmp/mongo-keyfile
+        exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --keyFile /tmp/mongo-keyfile
+    restart: unless-stopped
+
+  mongo2:
+    image: mongo:7.0
+    container_name: mongo2
+    hostname: mongo2
+    networks:
+      - mongo-cluster
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo2_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret123
+    entrypoint:
+      - bash
+      - -c
+      - |
+        set -e
+        umask 077
+        printf '%s\n' 'c29tZVJlcGxpY2FLZXlGb3JSUzAyMDI2' > /tmp/mongo-keyfile
+        chown mongodb:mongodb /tmp/mongo-keyfile
+        exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --keyFile /tmp/mongo-keyfile
+    restart: unless-stopped
+
+  mongo3:
+    image: mongo:7.0
+    container_name: mongo3
+    hostname: mongo3
+    networks:
+      - mongo-cluster
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo3_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret123
+    entrypoint:
+      - bash
+      - -c
+      - |
+        set -e
+        umask 077
+        printf '%s\n' 'c29tZVJlcGxpY2FLZXlGb3JSUzAyMDI2' > /tmp/mongo-keyfile
+        chown mongodb:mongodb /tmp/mongo-keyfile
+        exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --keyFile /tmp/mongo-keyfile
+    restart: unless-stopped
+
+  mongo-init:
+    image: mongo:7.0
+    container_name: mongo-init
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    entrypoint:
+      - bash
+      - -c
+      - |
+        echo "⏳ Chờ MongoDB khởi động (30s)..."
+        sleep 30
+
+        echo "🔧 Kiểm tra kết nối mongo1..."
+        until mongosh --host mongo1:27017 \
+          -u admin -p secret123 \
+          --authenticationDatabase admin \
+          --eval "db.adminCommand('ping')" --quiet; do
+          echo "   mongo1 chưa sẵn sàng, thử lại sau 3s..."
+          sleep 3
+        done
+
+        echo "🔧 Khởi tạo Replica Set..."
+        mongosh --host mongo1:27017 \
+          -u admin -p secret123 \
+          --authenticationDatabase admin \
+          --eval '
+            let initiated = true;
+            try { rs.status(); } catch (e) { initiated = false; }
+            if (!initiated) {
+              rs.initiate({
+                _id: "rs0",
+                members: [
+                  { _id: 0, host: "mongo1:27017", priority: 3 },
+                  { _id: 1, host: "mongo2:27017", priority: 2 },
+                  { _id: 2, host: "mongo3:27017", priority: 1 }
+                ]
+              });
+            }
+          '
+
+        echo "⏳ Chờ bầu Primary (~12s)..."
+        sleep 12
+
+        echo "✅ Tạo app user..."
+        mongosh --host mongo1:27017 \
+          -u admin -p secret123 \
+          --authenticationDatabase admin \
+          --eval '
+            use appdb;
+            if (!db.getUser("appuser")) {
+              db.createUser({
+                user: "appuser",
+                pwd: "apppass123",
+                roles: [{ role: "readWrite", db: "appdb" }]
+              });
+            }
+          '
+        echo "🎉 Replica Set rs0 đã sẵn sàng!"
+    restart: on-failure
+
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: mongo-express
+    networks:
+      - mongo-cluster
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: secret123
+      ME_CONFIG_MONGODB_URL: mongodb://admin:secret123@mongo1:27017,mongo2:27017,mongo3:27017/?replicaSet=rs0&authSource=admin
+      ME_CONFIG_BASICAUTH: "false"
+    depends_on:
+      - mongo1
+    restart: unless-stopped
