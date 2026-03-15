@@ -1,0 +1,168 @@
+services: 
+# config servers #
+  cfg-a: 
+    image: mongo:7.0
+    env_file:
+      - .env 
+    container_name: cfg-a 
+    networks: 
+      - mongo-cluster 
+    volumes: 
+      - cfg-a-data:/data/db
+      - ./key/mongo-keyfile:/key/mongo-keyfile:ro
+    command: mongod --configsvr --replSet cfgReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    healthcheck: 
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  cfg-b:
+    image: mongo:7.0
+    env_file:
+      - .env 
+    container_name: cfg-b 
+    networks: 
+      - mongo-cluster 
+    volumes: 
+      - cfg-b-data:/data/db
+      - ./key/mongo-keyfile:/key/mongo-keyfile:ro
+    command: mongod --configsvr --replSet cfgReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    healthcheck: 
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  cfg-c:
+    image: mongo:7.0
+    env_file:
+      - .env 
+    container_name: cfg-c 
+    networks: 
+      - mongo-cluster 
+    volumes: 
+      - cfg-c-data:/data/db
+      - ./key/mongo-keyfile:/key/mongo-keyfile:ro
+    command: mongod --configsvr --replSet cfgReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    healthcheck: 
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s   
+      retries: 5
+  # shard 1 #
+
+
+
+
+  sh1-a: 
+    image: mongo:7.0
+    env_file:
+      - .env 
+    container_name: sh1-a 
+    networks: 
+      - mongo-cluster 
+    volumes: 
+      - sh1-a-data:/data/db
+      - ./key/mongo-keyfile:/key/mongo-keyfile:ro
+    command: mongod --shardsvr --replSet sh1ReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    healthcheck: 
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  sh1-b:
+    image: mongo:7.0
+    env_file:
+      - .env    
+    container_name: sh1-b
+    networks: 
+      - mongo-cluster 
+    volumes: 
+      - sh1-b-data:/data/db
+      - ./key/mongo-keyfile:/key/mongo-keyfile:ro
+    command: mongod --shardsvr --replSet sh1ReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    healthcheck: 
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  sh1-c:
+    image: mongo:7.0
+    env_file:
+      - .env    
+    container_name: sh1-c
+    networks: 
+      - mongo-cluster 
+    volumes: 
+      - sh1-c-data:/data/db
+      - ./key/mongo-keyfile:/key/mongo-keyfile:ro   
+    command: mongod --shardsvr --replSet sh1ReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  # shard 2 #
+  sh2-a:
+    image: mongo:7.0
+    env_file:
+      - .env 
+    container_name: sh2-a 
+    networks: 
+      - mongo-cluster 
+    volumes: 
+      - sh2-a-data:/data/db
+      - ./key/mongo-keyfile:/key/mongo-keyfile:ro
+    command: mongod --shardsvr --replSet sh2ReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    healthcheck: 
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  sh2-b:
+    image: mongo:7.0
+    env_file:
+      - .env    
+    container_name: sh2-b
+    networks: 
+      - mongo-cluster 
+    volumes: 
+      - sh2-b-data:/data/db
+      - ./key/mongo-keyfile:/key/mongo-keyfile:ro
+    command: mongod --shardsvr --replSet sh2ReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    healthcheck: 
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s 
+      retries: 5
+  sh2-c:
+    image: mongo:7.0
+    env_file:
+      - .env  
+    container_name: sh2-c   
+    networks: 
+      - mongo-cluster
+    volumes:
+      - sh2-c-data:/data/db
+      - ./key/mongo-keyfile:/key/mongo-keyfile:ro
+    command: mongod --shardsvr --replSet sh2ReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s   
+      retries: 5
+  
+network:
+  mongo-cluster:
+    driver: bridge
+
+volumes:
+  cfg-a-data:
+  cfg-b-data:
+  cfg-c-data:
+  sh1-a-data:
+  sh1-b-data:
+  sh1-c-data:
+  sh2-a-data:
+  sh2-b-data:
+  sh2-c-data:
