@@ -151,8 +151,36 @@ services:
       interval: 5s
       timeout: 5s   
       retries: 5
-  
-network:
+  # mongo os# 
+
+  mongos: 
+    image: mongo:7.0
+    env_file:
+      - .env 
+    container_name: mongos 
+    networks: 
+      - mongo-cluster 
+    depends_on: 
+      - cfg-a
+      - cfg-b
+      - cfg-c
+      - sh1-a
+      - sh1-b
+      - sh1-c
+      - sh2-a
+      - sh2-b
+      - sh2-c
+    ports: 
+      - "27017:27017"
+    command: mongos --configdb cfgReplSet/cfg-a:27017,cfg-b:27017,cfg-c:27017 --bind_ip_all --keyFile /key/mongo-keyfile
+    volumes:
+      - ./key/mongo-keyfile:/key/mongo-keyfile:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s   
+      retries: 5
+networks:
   mongo-cluster:
     driver: bridge
 
