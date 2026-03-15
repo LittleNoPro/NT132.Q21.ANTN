@@ -1,0 +1,124 @@
+version: "3.8"
+
+services: 
+  mongo1:
+    image: mongo:7.0
+    env_file:
+      - .env 
+    container_name: mongo1 
+    command: mongod --replSet rs0 --bind_ip_all --keyFile /key/mongo-keyfile
+    ports: 
+      - "27017:27017"
+    volumes: 
+      - mongo1_data:/data/db
+      - ./key/mongo-keyfile:/key/mongo-keyfile:ro
+    networks:
+      - mongo-cluster 
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  mongo2: 
+    image: mongo:7.0
+    env_file:
+      - .env
+    container_name: mongo2 
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--keyFile", "/key/mongo-keyfile"]
+    ports: 
+      - "27018:27017"
+    volumes: 
+      - mongo2_data:/data/db
+      - ./key/mongo-keyfile:/key/mongo-keyfile:ro
+    networks:
+      - mongo-cluster
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  mongo3:
+    image: mongo:7.0
+    env_file:
+      - .env
+    container_name: mongo3 
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--keyFile", "/key/mongo-keyfile"]
+    ports: 
+      - "27019:27017"
+    volumes: 
+      - mongo3_data:/data/db
+      - ./key/mongo-keyfile:/key/mongo-keyfile:ro
+    networks:
+      - mongo-cluster
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  
+
+
+
+  mongo4: 
+    image: mongo:7.0
+    env_file:
+      - .env
+    container_name: mongo4 
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--keyFile", "/key/mongo-keyfile"]
+    ports: 
+      - "27020:27017"
+    volumes: 
+      - mongo4_data:/data/db
+      - ./key/mongo-keyfile:/key/mongo-keyfile:ro
+    networks:
+      - mongo-cluster
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mongo-init: 
+      image: mongo:7.0
+      env_file: 
+        - .env
+      container_name: mongo-init 
+      networks: 
+        - mongo-cluster
+      depends_on:
+        mongo1: { condition: service_healthy }
+        mongo2: { condition: service_healthy }
+        mongo3: { condition: service_healthy }
+        mongo4: { condition: service_healthy }
+      entrypoint: 
+        - bash 
+        - -c
+        - | 
+          echo "Starting initialization workflow..."
+          until mongosh --host mongo1:27017 -u "$$MONGO_INITDB_ROOT_USERNAME" -p "$$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin --eval "db.adminCommand('ping')" --quiet; do
+            echo "Waiting for auth to be ready on mongo1..."
+            sleep 3
+          done
+          mongosh --host mongo1:27017 -u "$$MONGO_INITDB_ROOT_USERNAME" -p "$$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin <<EOF
+          let status;
+          try { status = rs.status(); } catch (e) { status = { ok: 0 }; }
+          if (status.ok === 0) {
+            rs.initiate({
+              _id: "rs0",
+              members: [
+                { _id: 0, host: "mongo1:27017", priority: 3 },
+                { _id: 1, host: "mongo2:27017", priority: 2 },
+                { _id: 2, host: "mongo3:27017", priority: 1 },
+                { _id: 3, host: "mongo4:27017", priority: 0 }
+              ]
+            });
+          }
+          EOF
+volumes: 
+  mongo1_data:
+  mongo2_data:
+  mongo3_data: 
+  mongo4_data:
+networks:
+  mongo-cluster:
+    driver: bridge
