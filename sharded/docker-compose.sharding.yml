@@ -2,15 +2,15 @@ services:
 # config servers #
   cfg-a: 
     image: mongo:7.0
-    env_file:
-      - .env 
     container_name: cfg-a 
     networks: 
       - mongo-cluster 
     volumes: 
       - cfg-a-data:/data/db
       - ./key/mongo-keyfile:/key/mongo-keyfile:ro
-    command: mongod --configsvr --replSet cfgReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    command: mongod --configsvr --replSet cfgReplSet --port 27017 --bind_ip_all --keyFile /key/mongo-keyfile
+    ports: 
+      - "27018:27017"
     healthcheck: 
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 5s
@@ -19,15 +19,15 @@ services:
 
   cfg-b:
     image: mongo:7.0
-    env_file:
-      - .env 
     container_name: cfg-b 
     networks: 
       - mongo-cluster 
     volumes: 
       - cfg-b-data:/data/db
       - ./key/mongo-keyfile:/key/mongo-keyfile:ro
-    command: mongod --configsvr --replSet cfgReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    command: mongod --configsvr --replSet cfgReplSet --port 27017 --bind_ip_all --keyFile /key/mongo-keyfile
+    ports: 
+      - "27019:27017"
     healthcheck: 
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 5s
@@ -35,68 +35,64 @@ services:
       retries: 5
   cfg-c:
     image: mongo:7.0
-    env_file:
-      - .env 
     container_name: cfg-c 
     networks: 
       - mongo-cluster 
     volumes: 
       - cfg-c-data:/data/db
       - ./key/mongo-keyfile:/key/mongo-keyfile:ro
-    command: mongod --configsvr --replSet cfgReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    command: mongod --configsvr --replSet cfgReplSet --port 27017 --bind_ip_all --keyFile /key/mongo-keyfile
+    ports: 
+      - "27020:27017"
     healthcheck: 
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 5s
       timeout: 5s   
       retries: 5
   # shard 1 #
-
-
-
-
   sh1-a: 
     image: mongo:7.0
-    env_file:
-      - .env 
     container_name: sh1-a 
     networks: 
       - mongo-cluster 
     volumes: 
       - sh1-a-data:/data/db
       - ./key/mongo-keyfile:/key/mongo-keyfile:ro
-    command: mongod --shardsvr --replSet sh1ReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    command: mongod --shardsvr --replSet sh1ReplSet --port 27017 --bind_ip_all --keyFile /key/mongo-keyfile
+    ports: 
+      - "27021:27017"
     healthcheck: 
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 5s
       timeout: 5s
       retries: 5
   sh1-b:
-    image: mongo:7.0
-    env_file:
-      - .env    
+    image: mongo:7.0 
     container_name: sh1-b
     networks: 
       - mongo-cluster 
     volumes: 
       - sh1-b-data:/data/db
       - ./key/mongo-keyfile:/key/mongo-keyfile:ro
-    command: mongod --shardsvr --replSet sh1ReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    command: mongod --shardsvr --replSet sh1ReplSet --port 27017 --bind_ip_all --keyFile /key/mongo-keyfile
+    ports:
+      - "27022:27017"
     healthcheck: 
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 5s
       timeout: 5s
       retries: 5
   sh1-c:
-    image: mongo:7.0
-    env_file:
-      - .env    
+    image: mongo:7.0   
     container_name: sh1-c
     networks: 
       - mongo-cluster 
     volumes: 
       - sh1-c-data:/data/db
       - ./key/mongo-keyfile:/key/mongo-keyfile:ro   
-    command: mongod --shardsvr --replSet sh1ReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    command: mongod --shardsvr --replSet sh1ReplSet --port 27017 --bind_ip_all --keyFile /key/mongo-keyfile
+    ports: 
+      - "27023:27017"
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 5s
@@ -105,31 +101,31 @@ services:
   # shard 2 #
   sh2-a:
     image: mongo:7.0
-    env_file:
-      - .env 
     container_name: sh2-a 
     networks: 
       - mongo-cluster 
     volumes: 
       - sh2-a-data:/data/db
       - ./key/mongo-keyfile:/key/mongo-keyfile:ro
-    command: mongod --shardsvr --replSet sh2ReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    command: mongod --shardsvr --replSet sh2ReplSet --port 27017 --bind_ip_all --keyFile /key/mongo-keyfile
+    ports:
+      - "27024:27017"
     healthcheck: 
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 5s
       timeout: 5s
       retries: 5
   sh2-b:
-    image: mongo:7.0
-    env_file:
-      - .env    
+    image: mongo:7.0 
     container_name: sh2-b
     networks: 
       - mongo-cluster 
     volumes: 
       - sh2-b-data:/data/db
       - ./key/mongo-keyfile:/key/mongo-keyfile:ro
-    command: mongod --shardsvr --replSet sh2ReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    command: mongod --shardsvr --replSet sh2ReplSet --port 27017 --bind_ip_all --keyFile /key/mongo-keyfile
+    ports:
+      - "27025:27017"
     healthcheck: 
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 5s
@@ -137,15 +133,15 @@ services:
       retries: 5
   sh2-c:
     image: mongo:7.0
-    env_file:
-      - .env  
     container_name: sh2-c   
     networks: 
       - mongo-cluster
     volumes:
       - sh2-c-data:/data/db
       - ./key/mongo-keyfile:/key/mongo-keyfile:ro
-    command: mongod --shardsvr --replSet sh2ReplSet --bind_ip_all --keyFile /key/mongo-keyfile
+    command: mongod --shardsvr --replSet sh2ReplSet --port 27017 --bind_ip_all --keyFile /key/mongo-keyfile
+    ports: 
+      - "27026:27017"
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 5s
@@ -155,26 +151,20 @@ services:
 
   mongos: 
     image: mongo:7.0
+    container_name: mongos 
     env_file:
       - .env 
-    container_name: mongos 
     networks: 
       - mongo-cluster 
-    depends_on: 
-      - cfg-a
-      - cfg-b
-      - cfg-c
-      - sh1-a
-      - sh1-b
-      - sh1-c
-      - sh2-a
-      - sh2-b
-      - sh2-c
     ports: 
       - "27017:27017"
     command: mongos --configdb cfgReplSet/cfg-a:27017,cfg-b:27017,cfg-c:27017 --bind_ip_all --keyFile /key/mongo-keyfile
     volumes:
       - ./key/mongo-keyfile:/key/mongo-keyfile:ro
+    depends_on:
+      - cfg-a
+      - cfg-b
+      - cfg-c
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 5s
