@@ -1,0 +1,14 @@
+.env
+.env.local
+.venv/
+.runtime/
+db/keyfile
+backend/__pycache__/
+backend/models/__pycache__/
+backend/routes/__pycache__/
+frontend/.next/
+frontend/node_modules/
+*.pyc
+*.pyo
+*.swp
+*.log

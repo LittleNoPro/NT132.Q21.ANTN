@@ -1,0 +1,415 @@
+services:
+  config1:
+    image: mongo:7.0
+    container_name: mowndark-config1
+    hostname: config1
+    entrypoint: ["bash", "/scripts/mongo-entrypoint.sh"]
+    command: ["--configsvr", "--replSet", "configrs", "--bind_ip_all", "--keyFile", "/data/keyfile", "--port", "27019"]
+    environment:
+      MONGO_ROOT_USER: ${MONGO_ROOT_USER:-admin}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-Admin@123}
+      INIT_REPLICA_SET: "1"
+      RS_CONFIG: '{"_id":"configrs","configsvr":true,"members":[{"_id":0,"host":"config1:27019","priority":2},{"_id":1,"host":"config2:27019","priority":1},{"_id":2,"host":"config3:27019","priority":1}]}'
+    volumes:
+      - config1_data:/data/db
+      - ./db/keyfile:/tmp/keyfile:ro
+      - ./scripts/mongo-entrypoint.sh:/scripts/mongo-entrypoint.sh:ro
+    depends_on:
+      - config2
+      - config3
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --host 127.0.0.1 --port 27019 -u \"$${MONGO_ROOT_USER}\" -p \"$${MONGO_ROOT_PASSWORD}\" --authenticationDatabase admin --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1 || mongosh --host 127.0.0.1 --port 27019 --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  config2:
+    image: mongo:7.0
+    container_name: mowndark-config2
+    hostname: config2
+    entrypoint: ["bash", "/scripts/mongo-entrypoint.sh"]
+    command: ["--configsvr", "--replSet", "configrs", "--bind_ip_all", "--keyFile", "/data/keyfile", "--port", "27019"]
+    environment:
+      MONGO_ROOT_USER: ${MONGO_ROOT_USER:-admin}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-Admin@123}
+    volumes:
+      - config2_data:/data/db
+      - ./db/keyfile:/tmp/keyfile:ro
+      - ./scripts/mongo-entrypoint.sh:/scripts/mongo-entrypoint.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --host 127.0.0.1 --port 27019 -u \"$${MONGO_ROOT_USER}\" -p \"$${MONGO_ROOT_PASSWORD}\" --authenticationDatabase admin --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1 || mongosh --host 127.0.0.1 --port 27019 --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  config3:
+    image: mongo:7.0
+    container_name: mowndark-config3
+    hostname: config3
+    entrypoint: ["bash", "/scripts/mongo-entrypoint.sh"]
+    command: ["--configsvr", "--replSet", "configrs", "--bind_ip_all", "--keyFile", "/data/keyfile", "--port", "27019"]
+    environment:
+      MONGO_ROOT_USER: ${MONGO_ROOT_USER:-admin}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-Admin@123}
+    volumes:
+      - config3_data:/data/db
+      - ./db/keyfile:/tmp/keyfile:ro
+      - ./scripts/mongo-entrypoint.sh:/scripts/mongo-entrypoint.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --host 127.0.0.1 --port 27019 -u \"$${MONGO_ROOT_USER}\" -p \"$${MONGO_ROOT_PASSWORD}\" --authenticationDatabase admin --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1 || mongosh --host 127.0.0.1 --port 27019 --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard1a:
+    image: mongo:7.0
+    container_name: mowndark-shard1a
+    hostname: shard1a
+    entrypoint: ["bash", "/scripts/mongo-entrypoint.sh"]
+    command: ["--shardsvr", "--replSet", "shard1rs", "--bind_ip_all", "--keyFile", "/data/keyfile", "--port", "27018"]
+    environment:
+      MONGO_ROOT_USER: ${MONGO_ROOT_USER:-admin}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-Admin@123}
+      INIT_REPLICA_SET: "1"
+      RS_CONFIG: '{"_id":"shard1rs","members":[{"_id":0,"host":"shard1a:27018","priority":2},{"_id":1,"host":"shard1b:27018","priority":1},{"_id":2,"host":"shard1c:27018","priority":1}]}'
+    volumes:
+      - shard1a_data:/data/db
+      - ./db/keyfile:/tmp/keyfile:ro
+      - ./scripts/mongo-entrypoint.sh:/scripts/mongo-entrypoint.sh:ro
+    depends_on:
+      - shard1b
+      - shard1c
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --host 127.0.0.1 --port 27018 -u \"$${MONGO_ROOT_USER}\" -p \"$${MONGO_ROOT_PASSWORD}\" --authenticationDatabase admin --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1 || mongosh --host 127.0.0.1 --port 27018 --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard1b:
+    image: mongo:7.0
+    container_name: mowndark-shard1b
+    hostname: shard1b
+    entrypoint: ["bash", "/scripts/mongo-entrypoint.sh"]
+    command: ["--shardsvr", "--replSet", "shard1rs", "--bind_ip_all", "--keyFile", "/data/keyfile", "--port", "27018"]
+    environment:
+      MONGO_ROOT_USER: ${MONGO_ROOT_USER:-admin}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-Admin@123}
+    volumes:
+      - shard1b_data:/data/db
+      - ./db/keyfile:/tmp/keyfile:ro
+      - ./scripts/mongo-entrypoint.sh:/scripts/mongo-entrypoint.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --host 127.0.0.1 --port 27018 -u \"$${MONGO_ROOT_USER}\" -p \"$${MONGO_ROOT_PASSWORD}\" --authenticationDatabase admin --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1 || mongosh --host 127.0.0.1 --port 27018 --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard1c:
+    image: mongo:7.0
+    container_name: mowndark-shard1c
+    hostname: shard1c
+    entrypoint: ["bash", "/scripts/mongo-entrypoint.sh"]
+    command: ["--shardsvr", "--replSet", "shard1rs", "--bind_ip_all", "--keyFile", "/data/keyfile", "--port", "27018"]
+    environment:
+      MONGO_ROOT_USER: ${MONGO_ROOT_USER:-admin}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-Admin@123}
+    volumes:
+      - shard1c_data:/data/db
+      - ./db/keyfile:/tmp/keyfile:ro
+      - ./scripts/mongo-entrypoint.sh:/scripts/mongo-entrypoint.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --host 127.0.0.1 --port 27018 -u \"$${MONGO_ROOT_USER}\" -p \"$${MONGO_ROOT_PASSWORD}\" --authenticationDatabase admin --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1 || mongosh --host 127.0.0.1 --port 27018 --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard2a:
+    image: mongo:7.0
+    container_name: mowndark-shard2a
+    hostname: shard2a
+    entrypoint: ["bash", "/scripts/mongo-entrypoint.sh"]
+    command: ["--shardsvr", "--replSet", "shard2rs", "--bind_ip_all", "--keyFile", "/data/keyfile", "--port", "27018"]
+    environment:
+      MONGO_ROOT_USER: ${MONGO_ROOT_USER:-admin}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-Admin@123}
+      INIT_REPLICA_SET: "1"
+      RS_CONFIG: '{"_id":"shard2rs","members":[{"_id":0,"host":"shard2a:27018","priority":2},{"_id":1,"host":"shard2b:27018","priority":1},{"_id":2,"host":"shard2c:27018","priority":1}]}'
+    volumes:
+      - shard2a_data:/data/db
+      - ./db/keyfile:/tmp/keyfile:ro
+      - ./scripts/mongo-entrypoint.sh:/scripts/mongo-entrypoint.sh:ro
+    depends_on:
+      - shard2b
+      - shard2c
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --host 127.0.0.1 --port 27018 -u \"$${MONGO_ROOT_USER}\" -p \"$${MONGO_ROOT_PASSWORD}\" --authenticationDatabase admin --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1 || mongosh --host 127.0.0.1 --port 27018 --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard2b:
+    image: mongo:7.0
+    container_name: mowndark-shard2b
+    hostname: shard2b
+    entrypoint: ["bash", "/scripts/mongo-entrypoint.sh"]
+    command: ["--shardsvr", "--replSet", "shard2rs", "--bind_ip_all", "--keyFile", "/data/keyfile", "--port", "27018"]
+    environment:
+      MONGO_ROOT_USER: ${MONGO_ROOT_USER:-admin}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-Admin@123}
+    volumes:
+      - shard2b_data:/data/db
+      - ./db/keyfile:/tmp/keyfile:ro
+      - ./scripts/mongo-entrypoint.sh:/scripts/mongo-entrypoint.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --host 127.0.0.1 --port 27018 -u \"$${MONGO_ROOT_USER}\" -p \"$${MONGO_ROOT_PASSWORD}\" --authenticationDatabase admin --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1 || mongosh --host 127.0.0.1 --port 27018 --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard2c:
+    image: mongo:7.0
+    container_name: mowndark-shard2c
+    hostname: shard2c
+    entrypoint: ["bash", "/scripts/mongo-entrypoint.sh"]
+    command: ["--shardsvr", "--replSet", "shard2rs", "--bind_ip_all", "--keyFile", "/data/keyfile", "--port", "27018"]
+    environment:
+      MONGO_ROOT_USER: ${MONGO_ROOT_USER:-admin}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-Admin@123}
+    volumes:
+      - shard2c_data:/data/db
+      - ./db/keyfile:/tmp/keyfile:ro
+      - ./scripts/mongo-entrypoint.sh:/scripts/mongo-entrypoint.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --host 127.0.0.1 --port 27018 -u \"$${MONGO_ROOT_USER}\" -p \"$${MONGO_ROOT_PASSWORD}\" --authenticationDatabase admin --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1 || mongosh --host 127.0.0.1 --port 27018 --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard3a:
+    image: mongo:7.0
+    container_name: mowndark-shard3a
+    hostname: shard3a
+    entrypoint: ["bash", "/scripts/mongo-entrypoint.sh"]
+    command: ["--shardsvr", "--replSet", "shard3rs", "--bind_ip_all", "--keyFile", "/data/keyfile", "--port", "27018"]
+    environment:
+      MONGO_ROOT_USER: ${MONGO_ROOT_USER:-admin}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-Admin@123}
+      INIT_REPLICA_SET: "1"
+      RS_CONFIG: '{"_id":"shard3rs","members":[{"_id":0,"host":"shard3a:27018","priority":2},{"_id":1,"host":"shard3b:27018","priority":1},{"_id":2,"host":"shard3c:27018","priority":1}]}'
+    volumes:
+      - shard3a_data:/data/db
+      - ./db/keyfile:/tmp/keyfile:ro
+      - ./scripts/mongo-entrypoint.sh:/scripts/mongo-entrypoint.sh:ro
+    depends_on:
+      - shard3b
+      - shard3c
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --host 127.0.0.1 --port 27018 -u \"$${MONGO_ROOT_USER}\" -p \"$${MONGO_ROOT_PASSWORD}\" --authenticationDatabase admin --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1 || mongosh --host 127.0.0.1 --port 27018 --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard3b:
+    image: mongo:7.0
+    container_name: mowndark-shard3b
+    hostname: shard3b
+    entrypoint: ["bash", "/scripts/mongo-entrypoint.sh"]
+    command: ["--shardsvr", "--replSet", "shard3rs", "--bind_ip_all", "--keyFile", "/data/keyfile", "--port", "27018"]
+    environment:
+      MONGO_ROOT_USER: ${MONGO_ROOT_USER:-admin}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-Admin@123}
+    volumes:
+      - shard3b_data:/data/db
+      - ./db/keyfile:/tmp/keyfile:ro
+      - ./scripts/mongo-entrypoint.sh:/scripts/mongo-entrypoint.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --host 127.0.0.1 --port 27018 -u \"$${MONGO_ROOT_USER}\" -p \"$${MONGO_ROOT_PASSWORD}\" --authenticationDatabase admin --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1 || mongosh --host 127.0.0.1 --port 27018 --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard3c:
+    image: mongo:7.0
+    container_name: mowndark-shard3c
+    hostname: shard3c
+    entrypoint: ["bash", "/scripts/mongo-entrypoint.sh"]
+    command: ["--shardsvr", "--replSet", "shard3rs", "--bind_ip_all", "--keyFile", "/data/keyfile", "--port", "27018"]
+    environment:
+      MONGO_ROOT_USER: ${MONGO_ROOT_USER:-admin}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-Admin@123}
+    volumes:
+      - shard3c_data:/data/db
+      - ./db/keyfile:/tmp/keyfile:ro
+      - ./scripts/mongo-entrypoint.sh:/scripts/mongo-entrypoint.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --host 127.0.0.1 --port 27018 -u \"$${MONGO_ROOT_USER}\" -p \"$${MONGO_ROOT_PASSWORD}\" --authenticationDatabase admin --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1 || mongosh --host 127.0.0.1 --port 27018 --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  mongos:
+    image: mongo:7.0
+    container_name: mowndark-mongos
+    hostname: mongos
+    entrypoint:
+      [
+        "bash",
+        "-lc",
+        "mkdir -p /data && cp /tmp/keyfile /data/keyfile && chmod 400 /data/keyfile && chown mongodb:mongodb /data/keyfile && exec gosu mongodb mongos --configdb configrs/config1:27019,config2:27019,config3:27019 --bind_ip_all --keyFile /data/keyfile --port 27017"
+      ]
+    environment:
+      MONGO_ROOT_USER: ${MONGO_ROOT_USER:-admin}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-Admin@123}
+    volumes:
+      - ./db/keyfile:/tmp/keyfile:ro
+    ports:
+      - "27017:27017"
+    depends_on:
+      config1:
+        condition: service_healthy
+      config2:
+        condition: service_healthy
+      config3:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --host 127.0.0.1 --port 27017 -u \"$${MONGO_ROOT_USER}\" -p \"$${MONGO_ROOT_PASSWORD}\" --authenticationDatabase admin --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1 || mongosh --host 127.0.0.1 --port 27017 --quiet --eval \"db.adminCommand('ping')\" >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  mongo-init:
+    image: mongo:7.0
+    container_name: mowndark-mongo-init
+    entrypoint: ["bash", "/scripts/init-rs.sh"]
+    environment:
+      MONGO_ROOT_USER: ${MONGO_ROOT_USER:-admin}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-Admin@123}
+      MONGO_APP_USER: ${MONGO_APP_USER:-mowndark_user}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD:-mowndark_pass_2026}
+    volumes:
+      - ./scripts/init-rs.sh:/scripts/init-rs.sh:ro
+    depends_on:
+      config1:
+        condition: service_healthy
+      shard1a:
+        condition: service_healthy
+      shard2a:
+        condition: service_healthy
+      shard3a:
+        condition: service_healthy
+      mongos:
+        condition: service_started
+    networks:
+      - mowndark-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mowndark-backend
+    network_mode: host
+    environment:
+      FLASK_ENV: development
+      MONGODB_URI: mongodb://${MONGO_APP_USER:-mowndark_user}:${MONGO_APP_PASSWORD:-mowndark_pass_2026}@127.0.0.1:27017/mowndark?authSource=mowndark
+      MONGODB_DB_NAME: mowndark
+      SECRET_KEY: ${SECRET_KEY:-mowndark-secret-key-2026}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-mowndark-jwt-secret-2026}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://127.0.0.1:11434}
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-nomic-embed-text:latest}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      ALLOW_ANONYMOUS: ${ALLOW_ANONYMOUS:-true}
+      DEFAULT_PERMISSION: ${DEFAULT_PERMISSION:-editable}
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
+      mongos:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mowndark-frontend
+    environment:
+      NEXT_SERVER_API_URL: ${DOCKER_NEXT_SERVER_API_URL:-http://host.docker.internal:5000/api}
+      NEXT_PUBLIC_API_URL: /api
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+networks:
+  mowndark-net:
+    driver: bridge
+
+volumes:
+  config1_data:
+  config2_data:
+  config3_data:
+  shard1a_data:
+  shard1b_data:
+  shard1c_data:
+  shard2a_data:
+  shard2b_data:
+  shard2c_data:
+  shard3a_data:
+  shard3b_data:
+  shard3c_data:
