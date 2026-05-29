@@ -1,0 +1,214 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mowndark-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: /api
+      NEXT_SERVER_API_URL: ${NEXT_SERVER_API_URL:-http://backend:5000/api}
+    depends_on:
+      - backend
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mowndark-backend
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_ENV: ${FLASK_ENV:-development}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://router0:27017,router1:27018/mowndark}
+      MONGODB_DB_NAME: ${MONGODB_DB_NAME:-mowndark}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-me}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-jwt-secret-key-change-me}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      ALLOW_ANONYMOUS: ${ALLOW_ANONYMOUS:-true}
+      DEFAULT_PERMISSION: ${DEFAULT_PERMISSION:-editable}
+      ENABLE_ADMIN_LAB_APIS: ${ENABLE_ADMIN_LAB_APIS:-true}
+      ENABLE_DOCKER_LOG_API: ${ENABLE_DOCKER_LOG_API:-false}
+      EMBEDDINGS_ENABLED: ${EMBEDDINGS_ENABLED:-false}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-nomic-embed-text}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - router0
+      - router1
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  configsvr0:
+    image: mongo:7.0
+    command: mongod --configsvr --replSet configRs --bind_ip_all --dbpath /data/db --port 27017
+    volumes:
+      - configsvr0_data:/data/db
+      - ./scripts/mongo:/scripts:ro
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  configsvr1:
+    image: mongo:7.0
+    command: mongod --configsvr --replSet configRs --bind_ip_all --dbpath /data/db --port 27017
+    volumes:
+      - configsvr1_data:/data/db
+      - ./scripts/mongo:/scripts:ro
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  configsvr2:
+    image: mongo:7.0
+    command: mongod --configsvr --replSet configRs --bind_ip_all --dbpath /data/db --port 27017
+    volumes:
+      - configsvr2_data:/data/db
+      - ./scripts/mongo:/scripts:ro
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard00:
+    image: mongo:7.0
+    command: mongod --replSet rs0 --shardsvr --bind_ip_all --dbpath /data/db --port 27017
+    volumes:
+      - shard00_data:/data/db
+      - ./scripts/mongo:/scripts:ro
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard01:
+    image: mongo:7.0
+    command: mongod --replSet rs0 --shardsvr --bind_ip_all --dbpath /data/db --port 27017
+    volumes:
+      - shard01_data:/data/db
+      - ./scripts/mongo:/scripts:ro
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard02:
+    image: mongo:7.0
+    command: mongod --replSet rs0 --shardsvr --bind_ip_all --dbpath /data/db --port 27017
+    volumes:
+      - shard02_data:/data/db
+      - ./scripts/mongo:/scripts:ro
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard10:
+    image: mongo:7.0
+    command: mongod --replSet rs1 --shardsvr --bind_ip_all --dbpath /data/db --port 27017
+    volumes:
+      - shard10_data:/data/db
+      - ./scripts/mongo:/scripts:ro
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard11:
+    image: mongo:7.0
+    command: mongod --replSet rs1 --shardsvr --bind_ip_all --dbpath /data/db --port 27017
+    volumes:
+      - shard11_data:/data/db
+      - ./scripts/mongo:/scripts:ro
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard12:
+    image: mongo:7.0
+    command: mongod --replSet rs1 --shardsvr --bind_ip_all --dbpath /data/db --port 27017
+    volumes:
+      - shard12_data:/data/db
+      - ./scripts/mongo:/scripts:ro
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard20:
+    image: mongo:7.0
+    command: mongod --replSet rs2 --shardsvr --bind_ip_all --dbpath /data/db --port 27017
+    volumes:
+      - shard20_data:/data/db
+      - ./scripts/mongo:/scripts:ro
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard21:
+    image: mongo:7.0
+    command: mongod --replSet rs2 --shardsvr --bind_ip_all --dbpath /data/db --port 27017
+    volumes:
+      - shard21_data:/data/db
+      - ./scripts/mongo:/scripts:ro
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  shard22:
+    image: mongo:7.0
+    command: mongod --replSet rs2 --shardsvr --bind_ip_all --dbpath /data/db --port 27017
+    volumes:
+      - shard22_data:/data/db
+      - ./scripts/mongo:/scripts:ro
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  router0:
+    image: mongo:7.0
+    command: mongos --configdb configRs/configsvr0:27017,configsvr1:27017,configsvr2:27017 --bind_ip_all --port 27017
+    volumes:
+      - ./scripts/mongo:/scripts:ro
+    ports:
+      - "27117:27017"
+    depends_on:
+      - configsvr0
+      - configsvr1
+      - configsvr2
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+  router1:
+    image: mongo:7.0
+    command: mongos --configdb configRs/configsvr0:27017,configsvr1:27017,configsvr2:27017 --bind_ip_all --port 27018
+    volumes:
+      - ./scripts/mongo:/scripts:ro
+    ports:
+      - "27018:27018"
+    depends_on:
+      - configsvr0
+      - configsvr1
+      - configsvr2
+    networks:
+      - mowndark-net
+    restart: unless-stopped
+
+networks:
+  mowndark-net:
+    driver: bridge
+
+volumes:
+  configsvr0_data:
+  configsvr1_data:
+  configsvr2_data:
+  shard00_data:
+  shard01_data:
+  shard02_data:
+  shard10_data:
+  shard11_data:
+  shard12_data:
+  shard20_data:
+  shard21_data:
+  shard22_data:

@@ -1,0 +1,344 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import JetBrains Mono for code */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --foreground-rgb: 192, 202, 245;
+  --background-start-rgb: 15, 15, 20;
+  --background-end-rgb: 22, 22, 30;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-start-rgb));
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* CodeMirror Editor Styles */
+.cm-editor {
+  height: 100% !important;
+  background-color: #0f0f14 !important;
+}
+
+.cm-editor .cm-scroller {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Monaco, monospace !important;
+  line-height: 1.7 !important;
+}
+
+.cm-editor .cm-content {
+  padding: 24px !important;
+  caret-color: #a78bfa !important;
+}
+
+.cm-editor .cm-line {
+  padding: 2px 0 !important;
+}
+
+.cm-editor .cm-cursor {
+  border-left-color: #a78bfa !important;
+  border-left-width: 2px !important;
+}
+
+.cm-editor .cm-activeLine {
+  background-color: rgba(139, 92, 246, 0.06) !important;
+}
+
+.cm-editor .cm-activeLineGutter {
+  background-color: rgba(139, 92, 246, 0.06) !important;
+}
+
+.cm-editor .cm-selectionBackground {
+  background-color: rgba(139, 92, 246, 0.25) !important;
+}
+
+.cm-editor.cm-focused .cm-selectionBackground {
+  background-color: rgba(139, 92, 246, 0.25) !important;
+}
+
+.cm-editor .cm-gutters {
+  background-color: #0f0f14 !important;
+  border-right: 1px solid #1f1f28 !important;
+  color: #3d3d52 !important;
+}
+
+.cm-editor .cm-lineNumbers .cm-gutterElement {
+  padding: 0 16px 0 24px !important;
+  min-width: 48px !important;
+}
+
+.cm-editor .cm-foldGutter {
+  width: 16px !important;
+}
+
+/* Markdown syntax highlighting */
+.cm-editor .cm-header-1 {
+  font-size: 1.8em !important;
+  font-weight: 700 !important;
+  color: #7c3aed !important;
+}
+
+.cm-editor .cm-header-2 {
+  font-size: 1.5em !important;
+  font-weight: 600 !important;
+  color: #8b5cf6 !important;
+}
+
+.cm-editor .cm-header-3 {
+  font-size: 1.25em !important;
+  font-weight: 600 !important;
+  color: #a78bfa !important;
+}
+
+.cm-editor .cm-header-4,
+.cm-editor .cm-header-5,
+.cm-editor .cm-header-6 {
+  font-weight: 600 !important;
+  color: #c4b5fd !important;
+}
+
+.cm-editor .cm-quote {
+  color: #9aa5ce !important;
+  font-style: italic !important;
+}
+
+.cm-editor .cm-link {
+  color: #7c3aed !important;
+  text-decoration: underline !important;
+}
+
+.cm-editor .cm-url {
+  color: #787c99 !important;
+}
+
+.cm-editor .cm-strong {
+  font-weight: 700 !important;
+  color: #c0caf5 !important;
+}
+
+.cm-editor .cm-em {
+  font-style: italic !important;
+  color: #bb9af7 !important;
+}
+
+.cm-editor .cm-strikethrough {
+  text-decoration: line-through !important;
+  color: #787c99 !important;
+}
+
+.cm-editor .cm-monospace {
+  font-family: 'JetBrains Mono', monospace !important;
+  background-color: #1a1b26 !important;
+  color: #f7768e !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+}
+
+/* Code block styling */
+.cm-editor .cm-foldPlaceholder {
+  background-color: #1f1f28 !important;
+  border: 1px solid #2a2b3d !important;
+  color: #787c99 !important;
+}
+
+/* Search/Replace styling */
+.cm-editor .cm-searchMatch {
+  background-color: rgba(255, 215, 0, 0.3) !important;
+  border-radius: 2px !important;
+}
+
+.cm-editor .cm-searchMatch.cm-searchMatch-selected {
+  background-color: rgba(255, 165, 0, 0.5) !important;
+}
+
+/* Autocomplete dropdown */
+.cm-editor .cm-tooltip {
+  background-color: #16161e !important;
+  border: 1px solid #2a2b3d !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+.cm-editor .cm-tooltip-autocomplete {
+  padding: 4px !important;
+}
+
+.cm-editor .cm-tooltip-autocomplete > ul > li {
+  padding: 6px 12px !important;
+  border-radius: 4px !important;
+  color: #c0caf5 !important;
+}
+
+.cm-editor .cm-tooltip-autocomplete > ul > li[aria-selected] {
+  background-color: #7c3aed !important;
+  color: white !important;
+}
+
+/* Prose styling for markdown preview */
+.prose {
+  --tw-prose-body: #a9b1d6;
+  --tw-prose-headings: #c0caf5;
+  --tw-prose-links: #7c3aed;
+  --tw-prose-bold: #c0caf5;
+  --tw-prose-code: #f7768e;
+  --tw-prose-pre-bg: #1a1b26;
+  --tw-prose-pre-code: #a9b1d6;
+  --tw-prose-quotes: #9aa5ce;
+  --tw-prose-quote-borders: #7c3aed;
+  --tw-prose-hr: #2a2b3d;
+}
+
+/* Code highlighting - Tokyo Night theme */
+.hljs {
+  background: #1a1b26 !important;
+  color: #a9b1d6 !important;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-built_in {
+  color: #bb9af7 !important;
+}
+
+.hljs-string,
+.hljs-title,
+.hljs-section,
+.hljs-attribute {
+  color: #9ece6a !important;
+}
+
+.hljs-number,
+.hljs-literal {
+  color: #ff9e64 !important;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #565f89 !important;
+  font-style: italic !important;
+}
+
+.hljs-function,
+.hljs-title.function_ {
+  color: #7aa2f7 !important;
+}
+
+.hljs-variable,
+.hljs-template-variable {
+  color: #c0caf5 !important;
+}
+
+.hljs-type,
+.hljs-class {
+  color: #2ac3de !important;
+}
+
+.hljs-params {
+  color: #e0af68 !important;
+}
+
+.hljs-regexp {
+  color: #89ddff !important;
+}
+
+.hljs-meta {
+  color: #7c3aed !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f0f14;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2b3d;
+  border-radius: 5px;
+  border: 2px solid #0f0f14;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3d3d52;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2b3d #0f0f14;
+}
+
+/* Selection color */
+::selection {
+  background-color: rgba(139, 92, 246, 0.3);
+  color: #c0caf5;
+}
+
+/* Focus visible styles */
+:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+}
+
+/* Button/Input base styles */
+input, textarea, select {
+  font-family: inherit;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
